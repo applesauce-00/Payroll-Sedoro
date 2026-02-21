@@ -15,7 +15,7 @@ namespace Payroll_Sedoro
             double overtimeTotal = overtimeHours * overtimeAmount;
             double leave = 1;
             double leaveDeduction = leave * hourlyRate;
-            double totalGross = (gross + overtimeTotal) - leaveDeduction;
+            double totalGross = totalGrossComputation(gross, overtimeTotal, leaveDeduction);
             double pagibigBiweekly = 200 / 2;
             double netPay = totalGross - pagibigBiweekly;
 
@@ -39,8 +39,17 @@ namespace Payroll_Sedoro
                 Console.WriteLine($"PAG-IBIG Tax: {pagibigBiweekly}");
                 Console.WriteLine("");
                 Console.WriteLine($"NETPAY: {netPay}");
+            }  else
+            {
+                Console.WriteLine("Invalid Employee ID");
             }
 
+        }
+
+        static double totalGrossComputation(double gross, double overtimeTotal, double leaveDeduction)
+        {
+            double totalGross = (gross + overtimeTotal) - leaveDeduction;
+        
         }
     }
 }
