@@ -1,95 +1,80 @@
-﻿using System;
-namespace Payroll_Sedoro
+﻿using EmployeeDataService;
+using PayrollService;
+using PayrollData;
 
+namespace Payroll_Sedoro
 {
     internal class Program
     {
         static void Main(string[] args)
         {
-            string empid = "kirby";
-            int hourlyRate = 600, hoursWorked = 80;
-            int overtimeHours = 3;
-            double overtimeIncrease = 1.25;
-            double leave = 1;
-            double pagibigBiweekly = 200 / 2;
+            EmployeeInfos info = new EmployeeInfos();
+            PayrollServices payroll = new PayrollServices();
+            Employee emp = info.GetEmployee();
 
-            Console.Write("Enter Employee ID: ");
-            string userEmpid = Console.ReadLine();
+            short attempt = 0;
+            bool valid = false;
 
+            while (attempt < 3 && !valid)
             {
-                if (isValidEmployee(userEmpid, empid))
-                {
-                    double gross = grossComputation(hourlyRate, hoursWorked);
-                    double overtimeTotal = overtimeComputation(hourlyRate, overtimeHours, overtimeIncrease);
-                    double leaveDeduction = leaveDeductionComputation(hourlyRate, leave);
-                    double totalGross = totalGrossComputation(gross, overtimeTotal, leaveDeduction);
-                    double netPay = netPayComputation(totalGross, pagibigBiweekly);
+                Console.Write("Enter Employee ID: ");
 
-                    displayPayroll(userEmpid, hourlyRate, hoursWorked, gross, overtimeHours, overtimeTotal, leaveDeduction, totalGross, pagibigBiweekly, netPay);
-                    Console.WriteLine("");
+                string userEmpid = Console.ReadLine();
+
+                if (payroll.IsValidEmployee(userEmpid, emp.EmpId))
+                {
+                    double gross = payroll.GrossComputation(emp.HourlyRate, emp.HoursWorked);
+                    double overtime = payroll.OvertimeComputation(emp.HourlyRate, emp.OvertimeHours);
+                    double leave = payroll.LeaveDeduction(emp.HourlyRate, emp.LeaveDays);
+
+                    double totalGross = payroll.TotalGross(gross, overtime, leave);
+                    double netPay = payroll.NetPay(totalGross);
+
+                    DisplayPayroll(emp, gross, overtime, leave, totalGross, netPay, payroll);
+                    valid = true;
                 }
                 else
                 {
-                    Console.WriteLine("Incorrect Employee ID");
+                    attempt++;
+                    Console.WriteLine("Incorrect Employee ID\n");
+
+                    if (attempt == 3)
+                    {
+                        Console.WriteLine("Maximum attempts reached. Exiting program...");
+                        return;
+                    }
                 }
-
             }
-
         }
 
-
-        static bool isValidEmployee(string inputId, string correctId)
+        static void DisplayPayroll(Employee emp, double gross, double overtime,
+            double leaveDeduction, double totalGross, double netPay, PayrollServices payroll)
         {
-            return inputId == correctId;
-        }
-
-        static double overtimeComputation(int rate, double hours, double increase)
-        {
-            return rate * (hours * increase);
-        }
-        static double leaveDeductionComputation(int rate, double leave)
-        {
-            return rate * leave;
-        }
-        static double grossComputation(int rate, int hours)
-        {
-            return rate * hours;
-        }
-        static double totalGrossComputation(double gross, double overtimeTotal, double leaveDeduction)
-        {
-            double totalGross = (gross + overtimeTotal) - leaveDeduction;
-            return totalGross;
-        }
-        static double netPayComputation(double totalGross, double pagibig)
-        {
-            return totalGross - pagibig;
-        }
-        static void displayPayroll(string empid, int hourlyRate, int hoursWorked, double gross, int overtimeHours, double overtimeTotal, double leaveDeduction, double totalGross, double pagibigBiweekly, double netPay)
-        {
-            Console.WriteLine("");
-            Console.WriteLine("");
-            Console.WriteLine("");
+            var tax = payroll.GetTaxes();
+            Console.WriteLine("\n------------------------------------");
+            Console.WriteLine("    Employee Management System");
             Console.WriteLine("------------------------------------");
-            Console.WriteLine("Employee Management System");
+            Console.WriteLine("              PAYROLL");
             Console.WriteLine("------------------------------------");
-            Console.WriteLine("PAYROLL");
-            Console.WriteLine("------------------------------------");
-            Console.WriteLine("Method of Salary: Bi-weekly");
-            Console.Write($"Employee ID: {empid}\n");
-            Console.Write($"Employee Name: Kirby T. Sedoro");
-            Console.WriteLine("");
-            Console.WriteLine($"Hourly Rate: {hourlyRate}");
-            Console.WriteLine($"Hours Worked: {hoursWorked}");
+
+            Console.WriteLine($"Employee ID: {emp.EmpId}");
+            Console.WriteLine($"Employee Name: {emp.Name}");
+            Console.WriteLine($"Employee Title: {emp.Title}");
+
+            Console.WriteLine($"\nHourly Rate: {emp.HourlyRate}");
+            Console.WriteLine($"Hours Worked: {emp.HoursWorked}");
             Console.WriteLine($"Gross Basic Pay: {gross}");
-            Console.WriteLine($"Overtime ({overtimeHours} hr/s,): {overtimeTotal}");
-            Console.WriteLine($"Leave Deduction: {leaveDeduction}");
+            Console.WriteLine($"Overtime ({emp.OvertimeHours} hr/s): {overtime}");
+            Console.WriteLine($"Leave Deduction ({emp.LeaveDays} day/s): {leaveDeduction}");
             Console.WriteLine($"Total Gross Pay: {totalGross}");
-            Console.WriteLine("");
-            Console.WriteLine($"PAG-IBIG: {pagibigBiweekly}");
-            Console.WriteLine("");
-            Console.WriteLine($"NETPAY: {netPay}");
+
+            Console.WriteLine("\nTAXES");
+            Console.WriteLine($"PAG-IBIG: {tax.Pagibig}");
+            Console.WriteLine($"SSS: {tax.SSS}");
+            Console.WriteLine($"Philhealth: {tax.Philhealth}");
+            Console.WriteLine($"Total Tax Deduction: {payroll.TotalTax()}");
+
+            Console.WriteLine($"\nNETPAY: {netPay}");
         }
     }
-
-
 }

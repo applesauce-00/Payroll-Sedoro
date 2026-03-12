@@ -8,4 +8,16 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <EditorConfigFiles Remove="C:\Users\Admin\OneDrive\Documents\GitHub\Payroll-Sedoro\.editorconfig" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="C:\Users\Admin\OneDrive\Documents\GitHub\Payroll-Sedoro\.editorconfig" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="PayrollService\PayrollService.csproj" />
+  </ItemGroup>
+
 </Project>
