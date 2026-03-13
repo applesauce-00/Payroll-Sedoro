@@ -1,4 +1,4 @@
-﻿namespace EmployeeData
+﻿namespace EmployeeDataService
 {
     public class Employee
     {
@@ -12,4 +12,5 @@
 
         public double LeaveDays { get; set; }
     }
+
 }

@@ -1,7 +1,7 @@
-﻿using EmployeeData;
+﻿using EmployeeDataService;
 namespace EmployeeDataStorage
 {
-    public class EmployeeRepository
+    public class EmployeeInfo
     {
         public Employee GetEmployee()
         {
@@ -10,7 +10,7 @@ namespace EmployeeDataStorage
                 EmpId = "kirby",
                 Name = "Kirby T. Sedoro",
                 Title = "Operation Manager",
-                HourlyRate = 600,
+                HourlyRate = 300,
                 HoursWorked = 80,
                 OvertimeHours = 3,
                 LeaveDays = 1

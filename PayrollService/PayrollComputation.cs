@@ -1,8 +1,8 @@
-﻿using EmployeeData;
+﻿using EmployeeDataService;
 
 namespace PayrollService
 {
-    public class PayrollServices
+    public class PayrollComputation
     {
         double overtimeIncrease = 1.25;
         double pagibig = 200 / 2;
@@ -44,8 +44,17 @@ namespace PayrollService
             return totalGross - TotalTax();
         }
 
-        public double Pagibig => pagibig;
-        public double SSS => sss;
-        public double Philhealth => philhealth;
+        public double Pagibig()
+        {
+            return pagibig;
+        }
+        public double SSS()
+        {
+            return sss;
+        } 
+        public double Philhealth()
+        {
+            return philhealth;
+        } 
     }
 }
