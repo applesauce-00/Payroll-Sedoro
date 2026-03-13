@@ -7,6 +7,9 @@ using PayrollDataService;
 ﻿using System;
 namespace payroll
 <<<<<<< HEAD
+<<<<<<< HEAD
+>>>>>>> parent of a3b31bb (add additional name)
+=======
 >>>>>>> parent of a3b31bb (add additional name)
 =======
 >>>>>>> parent of a3b31bb (add additional name)
@@ -19,10 +22,13 @@ namespace Payroll_Sedoro
         {
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             EmployeeInfos info = new EmployeeInfos();
             PayrollServices payroll = new PayrollServices();
             Employee emp = info.GetEmployee();
 =======
+=======
+>>>>>>> parent of a3b31bb (add additional name)
 =======
 >>>>>>> parent of a3b31bb (add additional name)
             string empid = "m";
@@ -39,6 +45,7 @@ namespace Payroll_Sedoro
             short attempt = 0;
             bool valid = false;
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
             while (attempt < 3 && !valid)
@@ -77,6 +84,10 @@ namespace Payroll_Sedoro
             if (isValidEmployee(userEmpid, empid))
             {
 >>>>>>> parent of a3b31bb (add additional name)
+=======
+            if (isValidEmployee(userEmpid, empid))
+            {
+>>>>>>> parent of a3b31bb (add additional name)
                 double gross = grossComputation(hourlyRate, hoursWorked);
                 double overtimeTotal = overtimeComputation(hourlyRate, overtimeHours, overtimeIncrease);
                 double leaveDeduction = leaveDeductionComputation(hourlyRate, leave);
@@ -88,12 +99,16 @@ namespace Payroll_Sedoro
             {
                 Console.WriteLine("Incorrect Employee ID");
 <<<<<<< HEAD
+<<<<<<< HEAD
+>>>>>>> parent of a3b31bb (add additional name)
+=======
 >>>>>>> parent of a3b31bb (add additional name)
 =======
 >>>>>>> parent of a3b31bb (add additional name)
             }
         }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
         static void DisplayPayroll(Employee emp, double gross, double overtime,
@@ -115,6 +130,10 @@ namespace Payroll_Sedoro
 =======
         static bool isValidEmployee(string inputId, string validId)
         {
+=======
+        static bool isValidEmployee(string inputId, string validId)
+        {
+>>>>>>> parent of a3b31bb (add additional name)
 =======
         static bool isValidEmployee(string inputId, string validId)
         {
@@ -177,6 +196,10 @@ namespace Payroll_Sedoro
         }
     }
 <<<<<<< HEAD
+<<<<<<< HEAD
+}
+>>>>>>> parent of a3b31bb (add additional name)
+=======
 }
 >>>>>>> parent of a3b31bb (add additional name)
 =======
