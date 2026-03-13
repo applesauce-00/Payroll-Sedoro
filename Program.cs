@@ -1,7 +1,6 @@
-﻿using PayrollData;
+﻿using PayrollDataService;
 using PayrollService;
-using PayrollDataLayer;
-using PayrollDataService;
+using PayrollData;
 
 namespace Payroll_Sedoro
 {
