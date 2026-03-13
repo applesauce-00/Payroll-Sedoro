@@ -1,6 +1,6 @@
 ﻿using PayrollData;
 
-namespace PayrollDataService
+namespace EmployeeDataService
 {
     public class EmployeeInfos
     {

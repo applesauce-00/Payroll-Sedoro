@@ -17,7 +17,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="PayrollEmployeeData\PayrollDataService.csproj" />
     <ProjectReference Include="PayrollService\PayrollService.csproj" />
   </ItemGroup>
 
