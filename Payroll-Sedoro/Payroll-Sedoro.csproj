@@ -8,4 +8,10 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="EmployeeDataStorage\EmployeeDataStorage.csproj" />
+    <ProjectReference Include="EmployeeData\EmployeeData.csproj" />
+    <ProjectReference Include="PayrollService\PayrollService.csproj" />
+  </ItemGroup>
+
 </Project>
