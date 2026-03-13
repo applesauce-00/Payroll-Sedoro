@@ -6,6 +6,9 @@ using PayrollDataService;
 =======
 ﻿using System;
 namespace payroll
+<<<<<<< HEAD
+>>>>>>> parent of a3b31bb (add additional name)
+=======
 >>>>>>> parent of a3b31bb (add additional name)
 
 namespace Payroll_Sedoro
@@ -15,10 +18,13 @@ namespace Payroll_Sedoro
         static void Main(string[] args)
         {
 <<<<<<< HEAD
+<<<<<<< HEAD
             EmployeeInfos info = new EmployeeInfos();
             PayrollServices payroll = new PayrollServices();
             Employee emp = info.GetEmployee();
 =======
+=======
+>>>>>>> parent of a3b31bb (add additional name)
             string empid = "m";
             int hourlyRate = 600, hoursWorked = 80;
 
@@ -33,6 +39,7 @@ namespace Payroll_Sedoro
             short attempt = 0;
             bool valid = false;
 
+<<<<<<< HEAD
 <<<<<<< HEAD
             while (attempt < 3 && !valid)
             {
@@ -66,6 +73,10 @@ namespace Payroll_Sedoro
 =======
             if (isValidEmployee(userEmpid, empid))
             {
+=======
+            if (isValidEmployee(userEmpid, empid))
+            {
+>>>>>>> parent of a3b31bb (add additional name)
                 double gross = grossComputation(hourlyRate, hoursWorked);
                 double overtimeTotal = overtimeComputation(hourlyRate, overtimeHours, overtimeIncrease);
                 double leaveDeduction = leaveDeductionComputation(hourlyRate, leave);
@@ -76,10 +87,14 @@ namespace Payroll_Sedoro
             else
             {
                 Console.WriteLine("Incorrect Employee ID");
+<<<<<<< HEAD
+>>>>>>> parent of a3b31bb (add additional name)
+=======
 >>>>>>> parent of a3b31bb (add additional name)
             }
         }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
         static void DisplayPayroll(Employee emp, double gross, double overtime,
             double leaveDeduction, double totalGross, double netPay, PayrollServices payroll)
@@ -100,6 +115,10 @@ namespace Payroll_Sedoro
 =======
         static bool isValidEmployee(string inputId, string validId)
         {
+=======
+        static bool isValidEmployee(string inputId, string validId)
+        {
+>>>>>>> parent of a3b31bb (add additional name)
             return inputId == validId;
         }
 
@@ -157,5 +176,9 @@ namespace Payroll_Sedoro
             Console.WriteLine($"NETPAY: {netPay}");
         }
     }
+<<<<<<< HEAD
+}
+>>>>>>> parent of a3b31bb (add additional name)
+=======
 }
 >>>>>>> parent of a3b31bb (add additional name)
