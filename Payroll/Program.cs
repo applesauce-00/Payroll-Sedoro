@@ -66,10 +66,10 @@ namespace Payroll_Sedoro
                 switch (choice)
                 {
                     case "1":
-                        AddEmployee(empRepo);
+                        AddEmployee(empRepo, payroll);
                         break;
                     case "2":
-                        EditEmployee(empRepo);
+                        EditEmployee(empRepo, payroll);
                         break;
                     case "3":
                         DeleteEmployee(empRepo);
@@ -105,28 +105,24 @@ namespace Payroll_Sedoro
             PayrollResult result = payroll.ComputePayroll(emp);
             ShowPayroll(emp, result, payroll);
 
-            Console.WriteLine("\n--- Payroll History ---");
-            var history = empRepo.GetPayrollHistory(emp.EmpId);
-            foreach (var record in history)
-                Console.WriteLine($"{record.PayDate}: NetPay = {record.NetPay}");
         }
 
-        static void AddEmployee(EmployeeRepository empRepo)
+        static void AddEmployee(EmployeeRepository empRepo, PayrollComputation payroll)
         {
             Employee newEmp = new Employee();
             Console.Write("Employee ID: "); newEmp.EmpId = Console.ReadLine();
-            Console.Write("Name: "); newEmp.Name = Console.ReadLine();
-            Console.Write("Title: "); newEmp.Title = Console.ReadLine();
+            Console.Write("Name: "); newEmp.EmpName = Console.ReadLine();
+            Console.Write("Title: "); newEmp.EmpTitle = Console.ReadLine();
             Console.Write("Hourly Rate: "); newEmp.HourlyRate = Convert.ToInt32(Console.ReadLine());
             Console.Write("Hours Worked: "); newEmp.HoursWorked = Convert.ToInt32(Console.ReadLine());
-            Console.Write("Overtime Hours: "); newEmp.OvertimeHours = Convert.ToInt32(Console.ReadLine());
-            Console.Write("Leave Days: "); newEmp.LeaveDays = Convert.ToDouble(Console.ReadLine());
+            Console.Write("Overtime Hours: "); newEmp.OverTime = Convert.ToInt32(Console.ReadLine());
+            Console.Write("Leave Days: "); newEmp.LeaveDays = (int)Convert.ToDecimal(Console.ReadLine());
 
             empRepo.AddEmployee(newEmp);
             Console.WriteLine("Employee added.");
         }
 
-        static void EditEmployee(EmployeeRepository empRepo)
+        static void EditEmployee(EmployeeRepository empRepo, PayrollComputation payroll)
         {
             Console.Write("Enter Employee ID to edit: ");
             string editId = Console.ReadLine();
@@ -138,14 +134,14 @@ namespace Payroll_Sedoro
                 string name = Console.ReadLine();
                 if (!string.IsNullOrEmpty(name))
                 {
-                    editEmp.Name = name;
+                    editEmp.EmpName = name;
                 }
 
                 Console.Write("New Title (leave blank to keep current): ");
                 string title = Console.ReadLine();
                 if (!string.IsNullOrEmpty(title))
                 {
-                    editEmp.Title = title;
+                    editEmp.EmpTitle = title;
                 }
 
                 Console.Write("New Hourly Rate (leave blank to keep current): ");
@@ -166,18 +162,22 @@ namespace Payroll_Sedoro
                 string otStr = Console.ReadLine();
                 if (int.TryParse(otStr, out int ot))
                 {
-                    editEmp.OvertimeHours = ot;
+                    editEmp.OverTime = ot;
                 }
 
                 Console.Write("New Leave Days (leave blank to keep current): ");
                 string leaveStr = Console.ReadLine();
+
                 if (double.TryParse(leaveStr, out double leave))
                 {
-                    editEmp.LeaveDays = leave;
+                    editEmp.LeaveDays = (int)leave;
                 }
 
+                PayrollResult result = payroll.ComputePayroll(editEmp);
+                editEmp.NetPay = (decimal)result.NetPay;
+
                 empRepo.UpdateEmployee(editEmp);
-                Console.WriteLine("Employee updated.");
+                Console.WriteLine("Employee updated with NetPay: " + editEmp.NetPay);
             }
             else
             {
@@ -204,11 +204,11 @@ namespace Payroll_Sedoro
                 PayrollResult resultAll = payroll.ComputePayroll(e);
                 Console.WriteLine("");
                 Console.WriteLine($"ID: {e.EmpId}");
-                Console.WriteLine($"Name: {e.Name}");
-                Console.WriteLine($"Title: {e.Title}");
+                Console.WriteLine($"Name: {e.EmpName}");
+                Console.WriteLine($"Title: {e.EmpTitle}");
                 Console.WriteLine($"Hourly Rate: {e.HourlyRate}");
                 Console.WriteLine($"Hours Worked: {e.HoursWorked}");
-                Console.WriteLine($"Overtime Hours: {e.OvertimeHours}");
+                Console.WriteLine($"Overtime Hours: {e.OverTime}");
                 Console.WriteLine($"Leave Days: {e.LeaveDays}");
                 Console.WriteLine($"NetPay: {resultAll.NetPay}");
                 Console.WriteLine("---------------------------");
@@ -240,13 +240,13 @@ namespace Payroll_Sedoro
             Console.WriteLine("------------------------------------");
 
             Console.WriteLine($"Employee ID: {emp.EmpId}");
-            Console.WriteLine($"Employee Name: {emp.Name}");
-            Console.WriteLine($"Employee Title: {emp.Title}");
+            Console.WriteLine($"Employee Name: {emp.EmpName}");
+            Console.WriteLine($"Employee Title: {emp.EmpTitle}");
 
             Console.WriteLine($"\nHourly Rate: {emp.HourlyRate}");
             Console.WriteLine($"Hours Worked: {emp.HoursWorked}");
             Console.WriteLine($"Gross Basic Pay: {result.Gross}");
-            Console.WriteLine($"Overtime ({emp.OvertimeHours} hr/s): {result.Overtime}");
+            Console.WriteLine($"Overtime ({emp.OverTime} hr/s): {result.Overtime}");
             Console.WriteLine($"Leave Deduction ({emp.LeaveDays} day/s): {result.LeaveDeduction}");
             Console.WriteLine($"Total Gross Pay: {result.TotalGross}");
 
@@ -263,8 +263,8 @@ namespace Payroll_Sedoro
         {
             Console.WriteLine("\n--- Employee Info ---");
             Console.WriteLine($"ID: {emp.EmpId}");
-            Console.WriteLine($"Name: {emp.Name}");
-            Console.WriteLine($"Title: {emp.Title}");
+            Console.WriteLine($"Name: {emp.EmpName}");
+            Console.WriteLine($"Title: {emp.EmpTitle}");
             Console.WriteLine($"Hourly Rate: {emp.HourlyRate}");
         }
     }

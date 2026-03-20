@@ -9,6 +9,10 @@ namespace PayrollService
         private double sss = 250;
         private double philhealth = 150;
 
+
+        EmployeeDBData employeeDBData = new EmployeeDBData();
+
+
         public double ComputeGross(int rate, int hours)
         {
             return rate * hours;
@@ -47,8 +51,8 @@ namespace PayrollService
         }
         public PayrollResult ComputePayroll(Employee emp)
         {
-            double gross = ComputeGross(emp.HourlyRate, emp.HoursWorked);
-            double overtime = ComputeOvertime(emp.HourlyRate, emp.OvertimeHours);
+            double gross = ComputeGross(emp.HourlyRate, (int)emp.HoursWorked);
+            double overtime = ComputeOvertime(emp.HourlyRate, emp.OverTime);
             double leave = ComputeLeaveDeduction(emp.HourlyRate, emp.LeaveDays);
             double totalGross = ComputeTotalGross(gross, overtime, leave);
             double netPay = ComputeNetPay(totalGross);
