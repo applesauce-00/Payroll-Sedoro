@@ -1,20 +1,13 @@
-﻿using EmployeeDataService;
-namespace EmployeeDataStorage
+﻿namespace EmployeeDataService
 {
-    public class EmployeeInfo
+    public class Employee
     {
-        public Employee GetEmployee()
-        {
-            return new Employee
-            {
-                EmpId = "kirby",
-                Name = "Kirby T. Sedoro",
-                Title = "Operation Manager",
-                HourlyRate = 300,
-                HoursWorked = 80,
-                OvertimeHours = 3,
-                LeaveDays = 1
-            };
-        }
+        public string EmpId { get; set; }
+        public string Name { get; set; }
+        public string Title { get; set; }
+        public int HourlyRate { get; set; }
+        public int HoursWorked { get; set; } = 80;
+        public int OvertimeHours { get; set; } = 3;
+        public double LeaveDays { get; set; } = 1;
     }
 }

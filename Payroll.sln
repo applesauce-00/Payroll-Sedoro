@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.14.37012.4 d17.14
+VisualStudioVersion = 17.14.37012.4
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Payroll", "Payroll\Payroll.csproj", "{5101379D-99A2-4653-97C9-024CF6D0B09E}"
 EndProject
@@ -10,8 +10,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EmployeeDataStorage", "EmployeeDataStorage\EmployeeDataStorage.csproj", "{ACD55489-A799-4C50-AD4A-68F54B9A107C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PayrollService", "PayrollService\PayrollService.csproj", "{23DB3465-D088-4084-A1F9-F8A05BCD8F58}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PayrollDisplay", "PayrollDisplay\PayrollDisplay.csproj", "{F1EFFF36-433E-4E37-AA9C-7E3C9F0A8700}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -35,10 +33,6 @@ Global
 		{23DB3465-D088-4084-A1F9-F8A05BCD8F58}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{23DB3465-D088-4084-A1F9-F8A05BCD8F58}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{23DB3465-D088-4084-A1F9-F8A05BCD8F58}.Release|Any CPU.Build.0 = Release|Any CPU
-		{F1EFFF36-433E-4E37-AA9C-7E3C9F0A8700}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F1EFFF36-433E-4E37-AA9C-7E3C9F0A8700}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F1EFFF36-433E-4E37-AA9C-7E3C9F0A8700}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F1EFFF36-433E-4E37-AA9C-7E3C9F0A8700}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -4,46 +4,35 @@ namespace PayrollService
 {
     public class PayrollComputation
     {
-        double overtimeIncrease = 1.25;
-        double pagibig = 200 / 2;
-        double sss = 500 / 2;
-        double philhealth = 300 / 2;
+        private double overtimeMultiplier = 1.25;
+        private double pagibig = 100;
+        private double sss = 250;
+        private double philhealth = 150;
 
-        public bool IsValidEmployee(string inputId, string correctId)
-        {
-            return inputId == correctId;
-        }
-
-        public double GrossComputation(int rate, int hours)
+        public double ComputeGross(int rate, int hours)
         {
             return rate * hours;
         }
-
-        public double OvertimeComputation(int rate, int hours)
+        public double ComputeOvertime(int rate, int hours)
         {
-            return rate * (hours * overtimeIncrease);
+            return rate * hours * overtimeMultiplier;
         }
-
-        public double LeaveDeduction(int rate, double leave)
+        public double ComputeLeaveDeduction(int rate, double leave)
         {
             return rate * leave;
         }
-
-        public double TotalGross(double gross, double overtime, double leave)
+        public double ComputeTotalGross(double gross, double overtime, double leave)
         {
             return (gross + overtime) - leave;
         }
-
         public double TotalTax()
         {
             return pagibig + sss + philhealth;
         }
-
-        public double NetPay(double totalGross)
+        public double ComputeNetPay(double totalGross)
         {
             return totalGross - TotalTax();
         }
-
         public double Pagibig()
         {
             return pagibig;
@@ -51,10 +40,36 @@ namespace PayrollService
         public double SSS()
         {
             return sss;
-        } 
+        }
         public double Philhealth()
         {
             return philhealth;
-        } 
+        }
+        public PayrollResult ComputePayroll(Employee emp)
+        {
+            double gross = ComputeGross(emp.HourlyRate, emp.HoursWorked);
+            double overtime = ComputeOvertime(emp.HourlyRate, emp.OvertimeHours);
+            double leave = ComputeLeaveDeduction(emp.HourlyRate, emp.LeaveDays);
+            double totalGross = ComputeTotalGross(gross, overtime, leave);
+            double netPay = ComputeNetPay(totalGross);
+
+            return new PayrollResult
+            {
+                Gross = gross,
+                Overtime = overtime,
+                LeaveDeduction = leave,
+                TotalGross = totalGross,
+                NetPay = netPay
+            };
+        }
+    }
+
+    public class PayrollResult
+    {
+        public double Gross { get; set; }
+        public double Overtime { get; set; }
+        public double LeaveDeduction { get; set; }
+        public double TotalGross { get; set; }
+        public double NetPay { get; set; }
     }
 }
