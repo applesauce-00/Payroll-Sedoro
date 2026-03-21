@@ -12,6 +12,14 @@ namespace Payroll_Sedoro
             EmployeeService empRepo = new EmployeeService(new EmployeeDBData());
             PayrollComputation payroll = new PayrollComputation();
 
+            var allEmployees = empRepo.GetEmployees();
+            foreach (var emp in allEmployees)
+            {
+                var result = payroll.ComputePayroll(emp);
+                emp.NetPay = (decimal)result.NetPay;
+                empRepo.Update(emp);
+            }
+
             Console.WriteLine("Select your role:");
             Console.WriteLine("1. Admin");
             Console.WriteLine("2. Employee");
