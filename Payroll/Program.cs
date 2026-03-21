@@ -1,5 +1,4 @@
 ﻿using EmployeeDataService;
-using EmployeeDataStorage;
 using PayrollService;
 using System;
 using System.Collections.Generic;
@@ -10,7 +9,7 @@ namespace Payroll_Sedoro
     {
         static void Main(string[] args)
         {
-            EmployeeRepository empRepo = new EmployeeRepository();
+            EmployeeService empRepo = new EmployeeService(new EmployeeDBData());
             PayrollComputation payroll = new PayrollComputation();
 
             Console.WriteLine("Select your role:");
@@ -33,7 +32,7 @@ namespace Payroll_Sedoro
             }
         }
 
-        static void AdminMenu(EmployeeRepository empRepo, PayrollComputation payroll)
+        static void AdminMenu(EmployeeService empRepo, PayrollComputation payroll)
         {
             const string adminUser = "admin";
             const string adminPass = "admin123";
@@ -90,11 +89,11 @@ namespace Payroll_Sedoro
             }
         }
 
-        static void EmployeeLogin(EmployeeRepository empRepo, PayrollComputation payroll)
+        static void EmployeeLogin(EmployeeService empRepo, PayrollComputation payroll)
         {
             Console.Write("Enter your Employee ID: ");
             string empId = Console.ReadLine()?.Trim();
-            Employee emp = empRepo.GetEmployeeById(empId);
+            Employee? emp = empRepo.GetById(empId);
 
             if (emp == null)
             {
@@ -104,79 +103,62 @@ namespace Payroll_Sedoro
 
             PayrollResult result = payroll.ComputePayroll(emp);
             ShowPayroll(emp, result, payroll);
-
         }
 
-        static void AddEmployee(EmployeeRepository empRepo, PayrollComputation payroll)
+        static void AddEmployee(EmployeeService empRepo, PayrollComputation payroll)
         {
             Employee newEmp = new Employee();
             Console.Write("Employee ID: "); newEmp.EmpId = Console.ReadLine();
             Console.Write("Name: "); newEmp.EmpName = Console.ReadLine();
             Console.Write("Title: "); newEmp.EmpTitle = Console.ReadLine();
-            Console.Write("Hourly Rate: "); newEmp.HourlyRate = Convert.ToInt32(Console.ReadLine());
+            Console.Write("Hourly Rate: "); newEmp.HourlyRate = (int)Convert.ToDecimal(Console.ReadLine());
             Console.Write("Hours Worked: "); newEmp.HoursWorked = Convert.ToInt32(Console.ReadLine());
             Console.Write("Overtime Hours: "); newEmp.OverTime = Convert.ToInt32(Console.ReadLine());
             Console.Write("Leave Days: "); newEmp.LeaveDays = (int)Convert.ToDecimal(Console.ReadLine());
 
-            empRepo.AddEmployee(newEmp);
+            PayrollResult result = payroll.ComputePayroll(newEmp);
+            newEmp.NetPay = (decimal)result.NetPay;
+
+            empRepo.Add(newEmp);
             Console.WriteLine("Employee added.");
         }
 
-        static void EditEmployee(EmployeeRepository empRepo, PayrollComputation payroll)
+        static void EditEmployee(EmployeeService empRepo, PayrollComputation payroll)
         {
             Console.Write("Enter Employee ID to edit: ");
             string editId = Console.ReadLine();
-            Employee editEmp = empRepo.GetEmployeeById(editId);
+            Employee? editEmp = empRepo.GetById(editId);
 
             if (editEmp != null)
             {
                 Console.Write("New Name (leave blank to keep current): ");
                 string name = Console.ReadLine();
-                if (!string.IsNullOrEmpty(name))
-                {
-                    editEmp.EmpName = name;
-                }
+                if (!string.IsNullOrEmpty(name)) editEmp.EmpName = name;
 
                 Console.Write("New Title (leave blank to keep current): ");
                 string title = Console.ReadLine();
-                if (!string.IsNullOrEmpty(title))
-                {
-                    editEmp.EmpTitle = title;
-                }
+                if (!string.IsNullOrEmpty(title)) editEmp.EmpTitle = title;
 
                 Console.Write("New Hourly Rate (leave blank to keep current): ");
                 string rateStr = Console.ReadLine();
-                if (int.TryParse(rateStr, out int rate))
-                {
-                    editEmp.HourlyRate = rate;
-                }
+                if (decimal.TryParse(rateStr, out decimal rate)) editEmp.HourlyRate = (int)rate;
 
                 Console.Write("New Hours Worked (leave blank to keep current): ");
                 string hoursStr = Console.ReadLine();
-                if (int.TryParse(hoursStr, out int hours))
-                {
-                    editEmp.HoursWorked = hours;
-                }
+                if (int.TryParse(hoursStr, out int hours)) editEmp.HoursWorked = hours;
 
                 Console.Write("New Overtime Hours (leave blank to keep current): ");
                 string otStr = Console.ReadLine();
-                if (int.TryParse(otStr, out int ot))
-                {
-                    editEmp.OverTime = ot;
-                }
+                if (int.TryParse(otStr, out int ot)) editEmp.OverTime = ot;
 
                 Console.Write("New Leave Days (leave blank to keep current): ");
                 string leaveStr = Console.ReadLine();
-
-                if (double.TryParse(leaveStr, out double leave))
-                {
-                    editEmp.LeaveDays = (int)leave;
-                }
+                if (double.TryParse(leaveStr, out double leave)) editEmp.LeaveDays = (int)leave;
 
                 PayrollResult result = payroll.ComputePayroll(editEmp);
                 editEmp.NetPay = (decimal)result.NetPay;
 
-                empRepo.UpdateEmployee(editEmp);
+                empRepo.Update(editEmp);
                 Console.WriteLine("Employee updated with NetPay: " + editEmp.NetPay);
             }
             else
@@ -185,19 +167,19 @@ namespace Payroll_Sedoro
             }
         }
 
-        static void DeleteEmployee(EmployeeRepository empRepo)
+        static void DeleteEmployee(EmployeeService empRepo)
         {
             Console.Write("Enter Employee ID to delete: ");
             string delId = Console.ReadLine();
-            empRepo.DeleteEmployee(delId);
+            empRepo.Delete(delId);
             Console.WriteLine("Employee deleted.");
         }
 
-        static void ViewAllEmployees(EmployeeRepository empRepo, PayrollComputation payroll)
+        static void ViewAllEmployees(EmployeeService empRepo, PayrollComputation payroll)
         {
-            var allEmp = empRepo.GetAllEmployees();
+            var allEmp = empRepo.GetEmployees();
             Console.WriteLine("\n--- Employees ---\n");
-            Console.WriteLine("\nTotal Employee = " + allEmp.Count);
+            Console.WriteLine("Total Employees = " + allEmp.Count);
 
             foreach (var e in allEmp)
             {
@@ -215,20 +197,16 @@ namespace Payroll_Sedoro
             }
         }
 
-        static void SearchEmployee(EmployeeRepository empRepo, PayrollComputation payroll)
+        static void SearchEmployee(EmployeeService empRepo, PayrollComputation payroll)
         {
             Console.Write("Enter Employee ID to search: ");
             string searchId = Console.ReadLine();
-            Employee emp = empRepo.GetEmployeeById(searchId);
+            Employee? emp = empRepo.GetById(searchId);
 
             if (emp != null)
-            {
                 ShowEmployee(emp);
-            }
             else
-            {
                 Console.WriteLine("Employee not found.");
-            }
         }
 
         static void ShowPayroll(Employee emp, PayrollResult result, PayrollComputation payroll)
