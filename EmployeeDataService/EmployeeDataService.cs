@@ -4,11 +4,16 @@ namespace EmployeeDataService
 {
     public class EmployeeService
     {
-        IEmployeeDataService _dataService;
+        private IEmployeeDataService _dataService;
 
-        public EmployeeService(IEmployeeDataService employeeDataService)
+        public EmployeeService()
         {
-            _dataService = employeeDataService;
+            _dataService = new EmployeeDBData();   // Edit for changing default database (Json or DB)
+        }
+
+        public EmployeeService(IEmployeeDataService dataService)
+        {
+            _dataService = dataService;
         }
 
         public void Add(Employee emp)

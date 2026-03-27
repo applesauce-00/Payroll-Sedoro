@@ -7,18 +7,17 @@ namespace EmployeeDataService
     public class EmployeeDBData : IEmployeeDataService
     {
         // Connection string
-        private string connectionString =
-            "Data Source=PIPS\\SQLEXPRESS;Initial Catalog=Payroll_Employee;Integrated Security=True;TrustServerCertificate=True;";
+        private string connectionString = "Data Source=PIPS\\SQLEXPRESS;Initial Catalog=Payroll_Employee;Integrated Security=True;TrustServerCertificate=True;";
 
         private SqlConnection sqlConnection;
 
         public EmployeeDBData()
         {
             sqlConnection = new SqlConnection(connectionString);
-            AddSeeds(); 
+            AddSeeds();
         }
 
-        
+
         private void AddSeeds()                                    //dummy seeds
         {
             var existing = GetEmployees();
@@ -40,7 +39,7 @@ namespace EmployeeDataService
             }
         }
 
-        public void Add(Employee emp)   
+        public void Add(Employee emp)
         {
             string insertStatement = @"
                 INSERT INTO Employee

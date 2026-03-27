@@ -9,7 +9,7 @@ namespace Payroll_Sedoro
     {
         static void Main(string[] args)
         {
-            EmployeeService empRepo = new EmployeeService(new EmployeeDBData());
+            EmployeeService empRepo = new EmployeeService();
             PayrollComputation payroll = new PayrollComputation();
 
             var allEmployees = empRepo.GetEmployees();
