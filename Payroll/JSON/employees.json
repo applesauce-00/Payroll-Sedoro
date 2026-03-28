@@ -1,0 +1,22 @@
+[
+  {
+    "EmpId": "kirby",
+    "EmpName": "Kirby T. Sedoro",
+    "EmpTitle": "Operation Manager",
+    "HourlyRate": 300,
+    "HoursWorked": 80,
+    "OverTime": 3,
+    "LeaveDays": 1,
+    "NetPay": 24325
+  },
+  {
+    "EmpId": "ke",
+    "EmpName": "keke",
+    "EmpTitle": "keker",
+    "HourlyRate": 445,
+    "HoursWorked": 45,
+    "OverTime": 4,
+    "LeaveDays": 0,
+    "NetPay": 21750
+  }
+]
