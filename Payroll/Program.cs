@@ -1,7 +1,6 @@
 ﻿using EmployeeDataService;
 using PayrollService;
 using System;
-using System.Collections.Generic;
 
 namespace Payroll_Sedoro
 {
@@ -12,32 +11,39 @@ namespace Payroll_Sedoro
             EmployeeService empRepo = new EmployeeService();
             PayrollComputation payroll = new PayrollComputation();
 
-            var allEmployees = empRepo.GetEmployees();
-            foreach (var emp in allEmployees)
+            UpdateAllEmployeeNetPays(empRepo, payroll);
+
+            ShowMainMenu(empRepo, payroll);
+        }
+
+        static void UpdateAllEmployeeNetPays(EmployeeService empRepo, PayrollComputation payroll)
+        {
+            var employees = empRepo.GetEmployees();
+
+            foreach (var emp in employees)
             {
-                var result = payroll.ComputePayroll(emp);
-                emp.NetPay = (decimal)result.NetPay;
+                emp.NetPay = (decimal)payroll.ComputePayroll(emp).NetPay;
                 empRepo.Update(emp);
             }
+        }
 
+        static void ShowMainMenu(EmployeeService empRepo, PayrollComputation payroll)
+        {
             Console.WriteLine("Select your role:");
             Console.WriteLine("1. Admin");
             Console.WriteLine("2. Employee");
             Console.Write("Choice: ");
+
             string role = Console.ReadLine()?.Trim();
 
             if (role == "1")
-            {
                 AdminMenu(empRepo, payroll);
-            }
+
             else if (role == "2")
-            {
                 EmployeeLogin(empRepo, payroll);
-            }
+
             else
-            {
                 Console.WriteLine("Invalid choice.");
-            }
         }
 
         static void AdminMenu(EmployeeService empRepo, PayrollComputation payroll)
@@ -47,6 +53,7 @@ namespace Payroll_Sedoro
 
             Console.Write("Enter Admin Username: ");
             string user = Console.ReadLine();
+
             Console.Write("Enter Admin Password: ");
             string pass = Console.ReadLine();
 
@@ -57,6 +64,7 @@ namespace Payroll_Sedoro
             }
 
             bool exit = false;
+
             while (!exit)
             {
                 Console.WriteLine("\n--- Admin Menu ---");
@@ -68,28 +76,34 @@ namespace Payroll_Sedoro
                 Console.WriteLine("6. Exit");
 
                 Console.Write("Choice: ");
-                string choice = Console.ReadLine()?.Trim();
+                string choice = Console.ReadLine();
 
                 switch (choice)
                 {
                     case "1":
                         AddEmployee(empRepo, payroll);
                         break;
+
                     case "2":
                         EditEmployee(empRepo, payroll);
                         break;
+
                     case "3":
                         DeleteEmployee(empRepo);
                         break;
+
                     case "4":
-                        ViewAllEmployees(empRepo, payroll);
+                        ViewAllEmployees(empRepo);
                         break;
+
                     case "5":
-                        SearchEmployee(empRepo, payroll);
+                        SearchEmployee(empRepo);
                         break;
+
                     case "6":
                         exit = true;
                         break;
+
                     default:
                         Console.WriteLine("Invalid choice.");
                         break;
@@ -99,9 +113,11 @@ namespace Payroll_Sedoro
 
         static void EmployeeLogin(EmployeeService empRepo, PayrollComputation payroll)
         {
-            Console.Write("Enter your Employee ID: ");
-            string empId = Console.ReadLine()?.Trim();
-            Employee? emp = empRepo.GetById(empId);
+            Console.Write("Enter Employee ID: ");
+
+            string empId = Console.ReadLine();
+
+            Employee emp = empRepo.GetById(empId);
 
             if (emp == null)
             {
@@ -110,25 +126,47 @@ namespace Payroll_Sedoro
             }
 
             PayrollResult result = payroll.ComputePayroll(emp);
+
             ShowPayroll(emp, result, payroll);
         }
 
         static void AddEmployee(EmployeeService empRepo, PayrollComputation payroll)
         {
-            Employee newEmp = new Employee();
-            Console.Write("Employee ID: "); newEmp.EmpId = Console.ReadLine();
-            Console.Write("Name: "); newEmp.EmpName = Console.ReadLine();
-            Console.Write("Title: "); newEmp.EmpTitle = Console.ReadLine();
-            Console.Write("Hourly Rate: "); newEmp.HourlyRate = (int)Convert.ToDecimal(Console.ReadLine());
-            Console.Write("Hours Worked: "); newEmp.HoursWorked = Convert.ToInt32(Console.ReadLine());
-            Console.Write("Overtime Hours: "); newEmp.OverTime = Convert.ToInt32(Console.ReadLine());
-            Console.Write("Leave Days: "); newEmp.LeaveDays = (int)Convert.ToDecimal(Console.ReadLine());
+            try
+            {
+                Employee emp = new Employee();
 
-            PayrollResult result = payroll.ComputePayroll(newEmp);
-            newEmp.NetPay = (decimal)result.NetPay;
+                Console.Write("ID: ");
+                emp.EmpId = Console.ReadLine();
 
-            empRepo.Add(newEmp);
-            Console.WriteLine("Employee added.");
+                Console.Write("Name: ");
+                emp.EmpName = Console.ReadLine();
+
+                Console.Write("Title: ");
+                emp.EmpTitle = Console.ReadLine();
+
+                Console.Write("Hourly Rate: ");
+                emp.HourlyRate = Convert.ToInt32(Console.ReadLine());
+
+                Console.Write("Hours Worked: ");
+                emp.HoursWorked = Convert.ToDecimal(Console.ReadLine());
+
+                Console.Write("Overtime: ");
+                emp.OverTime = Convert.ToInt32(Console.ReadLine());
+
+                Console.Write("Leave Days: ");
+                emp.LeaveDays = Convert.ToInt32(Console.ReadLine());
+
+                emp.NetPay = (decimal)payroll.ComputePayroll(emp).NetPay;
+
+                empRepo.Add(emp);
+
+                Console.WriteLine("Employee Added.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
         }
 
         static void EditEmployee(EmployeeService empRepo, PayrollComputation payroll)
@@ -141,11 +179,11 @@ namespace Payroll_Sedoro
             {
                 Console.Write("New Name (leave blank to keep current): ");
                 string name = Console.ReadLine();
-                if (!string.IsNullOrEmpty(name)) editEmp.EmpName = name;
+                if (!string.IsNullOrWhiteSpace(name)) editEmp.EmpName = name;
 
                 Console.Write("New Title (leave blank to keep current): ");
                 string title = Console.ReadLine();
-                if (!string.IsNullOrEmpty(title)) editEmp.EmpTitle = title;
+                if (!string.IsNullOrWhiteSpace(title)) editEmp.EmpTitle = title;
 
                 Console.Write("New Hourly Rate (leave blank to keep current): ");
                 string rateStr = Console.ReadLine();
@@ -177,44 +215,38 @@ namespace Payroll_Sedoro
 
         static void DeleteEmployee(EmployeeService empRepo)
         {
-            Console.Write("Enter Employee ID to delete: ");
-            string delId = Console.ReadLine();
-            empRepo.Delete(delId);
-            Console.WriteLine("Employee deleted.");
+            Console.Write("Enter Employee ID: ");
+
+            string id = Console.ReadLine();
+
+            empRepo.Delete(id);
+
+            Console.WriteLine("Deleted.");
         }
 
-        static void ViewAllEmployees(EmployeeService empRepo, PayrollComputation payroll)
+        static void ViewAllEmployees(EmployeeService empRepo)
         {
-            var allEmp = empRepo.GetEmployees();
-            Console.WriteLine("\n--- Employees ---\n");
-            Console.WriteLine("Total Employees = " + allEmp.Count);
+            var employees = empRepo.GetEmployees();
 
-            foreach (var e in allEmp)
+            foreach (var emp in employees)
             {
-                PayrollResult resultAll = payroll.ComputePayroll(e);
-                Console.WriteLine("");
-                Console.WriteLine($"ID: {e.EmpId}");
-                Console.WriteLine($"Name: {e.EmpName}");
-                Console.WriteLine($"Title: {e.EmpTitle}");
-                Console.WriteLine($"Hourly Rate: {e.HourlyRate}");
-                Console.WriteLine($"Hours Worked: {e.HoursWorked}");
-                Console.WriteLine($"Overtime Hours: {e.OverTime}");
-                Console.WriteLine($"Leave Days: {e.LeaveDays}");
-                Console.WriteLine($"NetPay: {resultAll.NetPay}");
-                Console.WriteLine("---------------------------");
+                ShowEmployee(emp);
             }
         }
 
-        static void SearchEmployee(EmployeeService empRepo, PayrollComputation payroll)
+        static void SearchEmployee(EmployeeService empRepo)
         {
-            Console.Write("Enter Employee ID to search: ");
-            string searchId = Console.ReadLine();
-            Employee? emp = empRepo.GetById(searchId);
+            Console.Write("Enter ID: ");
+
+            string id = Console.ReadLine();
+
+            Employee emp = empRepo.GetById(id);
 
             if (emp != null)
                 ShowEmployee(emp);
+
             else
-                Console.WriteLine("Employee not found.");
+                Console.WriteLine("Not found.");
         }
 
         static void ShowPayroll(Employee emp, PayrollResult result, PayrollComputation payroll)
@@ -247,11 +279,11 @@ namespace Payroll_Sedoro
 
         static void ShowEmployee(Employee emp)
         {
-            Console.WriteLine("\n--- Employee Info ---");
+            Console.WriteLine("-------------------");
             Console.WriteLine($"ID: {emp.EmpId}");
             Console.WriteLine($"Name: {emp.EmpName}");
             Console.WriteLine($"Title: {emp.EmpTitle}");
-            Console.WriteLine($"Hourly Rate: {emp.HourlyRate}");
+            Console.WriteLine($"NetPay: {emp.NetPay}");
         }
     }
 }

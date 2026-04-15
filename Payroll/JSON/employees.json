@@ -18,5 +18,15 @@
     "OverTime": 4,
     "LeaveDays": 0,
     "NetPay": 21750
+  },
+  {
+    "EmpId": "be",
+    "EmpName": "beber",
+    "EmpTitle": "bebe",
+    "HourlyRate": 344,
+    "HoursWorked": 34,
+    "OverTime": 5,
+    "LeaveDays": 0,
+    "NetPay": 13346
   }
 ]
