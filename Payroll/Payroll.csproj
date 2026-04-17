@@ -10,7 +10,6 @@
   <ItemGroup>
     <ProjectReference Include="..\EmployeeDataService\EmployeeDataService.csproj" />
     <ProjectReference Include="..\EmployeeDataStorage\EmployeeDataStorage.csproj" />
-    <ProjectReference Include="..\PayrollDisplay\PayrollDisplay.csproj" />
     <ProjectReference Include="..\PayrollService\PayrollService.csproj" />
   </ItemGroup>
 
