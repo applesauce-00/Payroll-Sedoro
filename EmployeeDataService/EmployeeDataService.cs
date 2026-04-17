@@ -9,7 +9,7 @@ namespace EmployeeDataService
 
         public EmployeeService()
         {
-            _dataService = new EmployeeDBData(); // Edit for changing default database (Json or DB)
+            _dataService = new EmployeeJsonData(); // Edit for changing default database (Json or DB)
         }
 
         public EmployeeService(IEmployeeDataService dataService)
