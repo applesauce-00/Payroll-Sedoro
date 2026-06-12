@@ -3,30 +3,15 @@
     "EmpId": "kirby",
     "EmpName": "Kirby T. Sedoro",
     "EmpTitle": "Operation Manager",
-    "HourlyRate": 300,
-    "HoursWorked": 80,
-    "OverTime": 3,
-    "LeaveDays": 1,
-    "NetPay": 24325
-  },
-  {
-    "EmpId": "ke",
-    "EmpName": "keke",
-    "EmpTitle": "keker",
-    "HourlyRate": 445,
-    "HoursWorked": 45,
-    "OverTime": 4,
-    "LeaveDays": 0,
-    "NetPay": 21750
-  },
-  {
-    "EmpId": "be",
-    "EmpName": "beber",
-    "EmpTitle": "bebe",
-    "HourlyRate": 344,
-    "HoursWorked": 34,
-    "OverTime": 5,
-    "LeaveDays": 0,
-    "NetPay": 13346
+    "Leave": 6,
+    "SalaryInfo": {
+      "EmpId": "kirby",
+      "HoursWorked": 80,
+      "HourlyRate": 445,
+      "OverTimeHours": 10,
+      "OverTimePay": 5562.50,
+      "Tax": 500,
+      "NetPay": 40662.5
+    }
   }
 ]

@@ -5,64 +5,67 @@ namespace EmployeeDataService
 {
     public class EmployeeInMemoryData : IEmployeeDataService
     {
-        public List<Employee> dummyEmployees = new List<Employee>();
+        private List<Employee> _employees = new List<Employee>();
+        private List<Salary> _salaries = new List<Salary>();
 
         public EmployeeInMemoryData()
         {
-            Employee emp = new Employee
+            // Adding seeds
+            _employees.Add(new Employee { EmpId = "kirby", EmpName = "Kirby T. Sedoro", EmpTitle = "Operation Manager", Leave = 0 });
+            _salaries.Add(new Salary { EmpId = "kirby", HoursWorked = 80, HourlyRate = 300, OverTimeHours = 3, OverTimePay = 0, NetPay = 0 });
+        }
+
+        public void Add(Employee emp, Salary salary)
+        {
+            _employees.Add(emp);
+            _salaries.Add(salary);
+        }
+
+        public Employee GetById(string empId)
+        {
+            var emp = _employees.FirstOrDefault(e => e.EmpId == empId);
+            if (emp != null)
             {
-                EmpId = "kirby",
-                EmpName = "Kirby T. Sedoro",
-                EmpTitle = "Operation Manager",
-                HourlyRate = 300,
-                HoursWorked = 80,
-                OverTime = 3,
-                LeaveDays = 1,
-                NetPay = 0
-            };
-
-            dummyEmployees.Add(emp);
-        }
-
-        public void Add(Employee emp)
-        {
-            dummyEmployees.Add(emp);
-        }
-
-        public Employee? GetById(string empId)
-        {
-            return dummyEmployees.FirstOrDefault(e => e.EmpId == empId);
+                emp.SalaryInfo = _salaries.FirstOrDefault(s => s.EmpId == empId);
+            }
+            return emp;
         }
 
         public List<Employee> GetEmployees()
         {
-            return dummyEmployees;
+            foreach (var emp in _employees)
+            {
+                emp.SalaryInfo = _salaries.FirstOrDefault(s => s.EmpId == emp.EmpId);
+            }
+            return _employees;
         }
 
-        public void Update(Employee emp)
+        public void Update(Employee emp, Salary salary)
         {
-            var existing = GetById(emp.EmpId);
+            var existingEmp = _employees.FirstOrDefault(e => e.EmpId == emp.EmpId);
+            var existingSal = _salaries.FirstOrDefault(s => s.EmpId == emp.EmpId);
 
-            if (existing != null)
+            if (existingEmp != null)
             {
-                existing.EmpName = emp.EmpName;
-                existing.EmpTitle = emp.EmpTitle;
-                existing.HourlyRate = emp.HourlyRate;
-                existing.HoursWorked = emp.HoursWorked;
-                existing.OverTime = emp.OverTime;
-                existing.LeaveDays = emp.LeaveDays;
-                existing.NetPay = emp.NetPay;
+                existingEmp.EmpName = emp.EmpName;
+                existingEmp.EmpTitle = emp.EmpTitle;
+                existingEmp.Leave = emp.Leave; 
+            }
+
+            if (existingSal != null && salary != null)
+            {
+                existingSal.HoursWorked = salary.HoursWorked;
+                existingSal.HourlyRate = salary.HourlyRate;
+                existingSal.OverTimeHours = salary.OverTimeHours;
+                existingSal.OverTimePay = salary.OverTimePay; 
+                existingSal.NetPay = salary.NetPay;
             }
         }
 
         public void Delete(string empId)
         {
-            var existing = GetById(empId);
-
-            if (existing != null)
-            {
-                dummyEmployees.Remove(existing);
-            }
+            _employees.RemoveAll(e => e.EmpId == empId);
+            _salaries.RemoveAll(s => s.EmpId == empId);
         }
     }
 }

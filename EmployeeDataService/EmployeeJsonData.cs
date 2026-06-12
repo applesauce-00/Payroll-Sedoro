@@ -1,21 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text.Json;
-using System.Threading.Tasks;
 
 namespace EmployeeDataService
 {
     public class EmployeeJsonData : IEmployeeDataService
     {
         private List<Employee> employees = new List<Employee>();
-
         private string _jsonFileName;
 
         public EmployeeJsonData()
         {
             _jsonFileName = $"{AppDomain.CurrentDomain.BaseDirectory}/employees.json";
-
             PopulateJsonFile();
         }
 
@@ -25,31 +23,33 @@ namespace EmployeeDataService
 
             if (employees.Count <= 0)
             {
+                // Seeds
                 employees.Add(new Employee
                 {
                     EmpId = "kirby",
                     EmpName = "Kirby T. Sedoro",
                     EmpTitle = "Operation Manager",
-                    HourlyRate = 300,
-                    HoursWorked = 80,
-                    OverTime = 3,
-                    LeaveDays = 1,
-                    NetPay = 0
+                    Leave = 0,
+                    SalaryInfo = new Salary
+                    {
+                        EmpId = "kirby",
+                        HourlyRate = 300,
+                        HoursWorked = 80,
+                        OverTimeHours = 3,
+                        OverTimePay = 900,
+                        Tax = 0,
+                        NetPay = 24000
+                    }
                 });
-
                 SaveDataToJsonFile();
             }
         }
 
         private void SaveDataToJsonFile()
         {
-            using (var outputStream = File.Create(_jsonFileName))
-            {
-                JsonSerializer.Serialize<List<Employee>>(
-                    new Utf8JsonWriter(outputStream, new JsonWriterOptions
-                    { SkipValidation = true, Indented = true }),
-                    employees);
-            }
+            var options = new JsonSerializerOptions { WriteIndented = true };
+            string jsonString = JsonSerializer.Serialize(employees, options);
+            File.WriteAllText(_jsonFileName, jsonString);
         }
 
         private void RetrieveDataFromJsonFile()
@@ -57,32 +57,21 @@ namespace EmployeeDataService
             if (!File.Exists(_jsonFileName))
             {
                 employees = new List<Employee>();
-                SaveDataToJsonFile();
                 return;
             }
 
-            using (var jsonFileReader = File.OpenText(this._jsonFileName))
+            string json = File.ReadAllText(_jsonFileName);
+            if (!string.IsNullOrWhiteSpace(json))
             {
-                string json = jsonFileReader.ReadToEnd();
-
-                if (string.IsNullOrWhiteSpace(json))
-                {
-                    employees = new List<Employee>();
-                }
-                else
-                {
-                    employees = JsonSerializer.Deserialize<List<Employee>>(
-                        json,
-                        new JsonSerializerOptions
-                        { PropertyNameCaseInsensitive = true }
-                    ) ?? new List<Employee>();
-                }
+                employees = JsonSerializer.Deserialize<List<Employee>>(json,
+                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? new List<Employee>();
             }
         }
 
-        public void Add(Employee emp)
+        public void Add(Employee emp, Salary salary)
         {
             RetrieveDataFromJsonFile();
+            emp.SalaryInfo = salary;
             employees.Add(emp);
             SaveDataToJsonFile();
         }
@@ -93,43 +82,31 @@ namespace EmployeeDataService
             return employees;
         }
 
-        public Employee? GetById(string empId)
+        public Employee GetById(string empId)
         {
             RetrieveDataFromJsonFile();
-            return employees.Where(x => x.EmpId == empId).FirstOrDefault();
+            return employees.FirstOrDefault(x => x.EmpId == empId);
         }
 
-        public void Update(Employee emp)
+        public void Update(Employee emp, Salary salary)
         {
             RetrieveDataFromJsonFile();
+            var existing = employees.FirstOrDefault(x => x.EmpId == emp.EmpId);
 
-            var existingEmployee = employees.FirstOrDefault(x => x.EmpId == emp.EmpId);
-
-            if (existingEmployee != null)
+            if (existing != null)
             {
-                existingEmployee.EmpName = emp.EmpName;
-                existingEmployee.EmpTitle = emp.EmpTitle;
-                existingEmployee.HourlyRate = emp.HourlyRate;
-                existingEmployee.HoursWorked = emp.HoursWorked;
-                existingEmployee.OverTime = emp.OverTime;
-                existingEmployee.LeaveDays = emp.LeaveDays;
-                existingEmployee.NetPay = emp.NetPay;
+                existing.EmpName = emp.EmpName;
+                existing.EmpTitle = emp.EmpTitle;
+                existing.Leave = emp.Leave;
+                existing.SalaryInfo = salary;
             }
-
             SaveDataToJsonFile();
         }
 
         public void Delete(string empId)
         {
             RetrieveDataFromJsonFile();
-
-            var existingEmployee = employees.FirstOrDefault(x => x.EmpId == empId);
-
-            if (existingEmployee != null)
-            {
-                employees.Remove(existingEmployee);
-            }
-
+            employees.RemoveAll(x => x.EmpId == empId);
             SaveDataToJsonFile();
         }
     }

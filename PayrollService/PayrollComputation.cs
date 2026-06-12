@@ -4,48 +4,52 @@ namespace PayrollService
 {
     public class PayrollComputation
     {
-        private const double overtimeMultiplier = 1.25;
-        private const double pagibig = 100;
-        private const double sss = 250;
-        private const double philhealth = 150;
+        private const decimal _pagibig = 100m;
+        private const decimal _sss = 250m;
+        private const decimal _philhealth = 150m;
+        private const decimal OvertimeMultiplier = 1.25m;
 
-        public PayrollResult ComputePayroll(Employee emp)
+        public PayrollResult ComputePayroll(Employee emp, Salary salary)
         {
-            double gross = emp.HourlyRate * (double)emp.HoursWorked;
-            double overtime = emp.HourlyRate * emp.OverTime * overtimeMultiplier;
-            double leave = emp.HourlyRate * emp.LeaveDays;
+            decimal gross = salary.HourlyRate * salary.HoursWorked;
+            decimal otPay = salary.HourlyRate * salary.OverTimeHours * OvertimeMultiplier;
 
-            double totalGross = gross + overtime - leave;
-            double totalTax = pagibig + sss + philhealth;
+            decimal totalGross = gross + otPay;
+            decimal totalTax = Pagibig() + SSS() + Philhealth();
+            salary.Tax = totalTax;
+            decimal netPay = totalGross - totalTax;
+
+
+            salary.OverTimePay = otPay;
+            salary.NetPay = netPay;
 
             return new PayrollResult
             {
-                Gross = gross,
-                Overtime = overtime,
-                LeaveDeduction = leave,
-                TotalGross = totalGross,
-                NetPay = totalGross - totalTax
+                Gross = (double)gross,
+                Overtime = (double)otPay,
+                TotalGross = (double)totalGross,
+                NetPay = (double)netPay
             };
         }
 
-        public double TotalTax()
+        public decimal TotalTax()
         {
-            return pagibig + sss + philhealth;
+            return Pagibig() + SSS() + Philhealth();
         }
 
-        public double Pagibig()
+        public decimal Pagibig()
         {
-            return pagibig;
+            return _pagibig;
         }
 
-        public double SSS()
+        public decimal SSS()
         {
-            return sss;
+            return _sss;
         }
 
-        public double Philhealth()
+        public decimal Philhealth()
         {
-            return philhealth;
+            return _philhealth;
         }
     }
 

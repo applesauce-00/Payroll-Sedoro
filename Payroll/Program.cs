@@ -8,7 +8,7 @@ namespace Payroll_Sedoro
     {
         static void Main(string[] args)
         {
-            EmployeeService empRepo = new EmployeeService();
+            EmployeeService empRepo = new EmployeeService(new EmployeeDBData());
             PayrollComputation payroll = new PayrollComputation();
 
             UpdateAllEmployeeNetPays(empRepo, payroll);
@@ -22,8 +22,8 @@ namespace Payroll_Sedoro
 
             foreach (var emp in employees)
             {
-                emp.NetPay = (decimal)payroll.ComputePayroll(emp).NetPay;
-                empRepo.Update(emp);
+                emp.SalaryInfo.NetPay = (decimal)payroll.ComputePayroll(emp, emp.SalaryInfo).NetPay;
+                empRepo.Update(emp, emp.SalaryInfo);
             }
         }
 
@@ -125,9 +125,9 @@ namespace Payroll_Sedoro
                 return;
             }
 
-            PayrollResult result = payroll.ComputePayroll(emp);
+            PayrollResult result = payroll.ComputePayroll(emp, emp.SalaryInfo);
 
-            ShowPayroll(emp, result, payroll);
+            ShowPayroll(emp, emp.SalaryInfo, result, payroll);
         }
 
         static void AddEmployee(EmployeeService empRepo, PayrollComputation payroll)
@@ -135,9 +135,12 @@ namespace Payroll_Sedoro
             try
             {
                 Employee emp = new Employee();
+                Salary sal = new Salary();
 
                 Console.Write("ID: ");
-                emp.EmpId = Console.ReadLine();
+                string id = Console.ReadLine();
+                emp.EmpId = id;
+                sal.EmpId = id; // Foreign Key
 
                 Console.Write("Name: ");
                 emp.EmpName = Console.ReadLine();
@@ -146,37 +149,39 @@ namespace Payroll_Sedoro
                 emp.EmpTitle = Console.ReadLine();
 
                 Console.Write("Hourly Rate: ");
-                emp.HourlyRate = Convert.ToInt32(Console.ReadLine());
+                sal.HourlyRate = Convert.ToDecimal(Console.ReadLine());
 
                 Console.Write("Hours Worked: ");
-                emp.HoursWorked = Convert.ToDecimal(Console.ReadLine());
+                sal.HoursWorked = Convert.ToDecimal(Console.ReadLine());
 
-                Console.Write("Overtime: ");
-                emp.OverTime = Convert.ToInt32(Console.ReadLine());
+                Console.Write("Overtime Hours: ");
+                sal.OverTimeHours = Convert.ToDecimal(Console.ReadLine());
 
-                Console.Write("Leave Days: ");
-                emp.LeaveDays = Convert.ToInt32(Console.ReadLine());
+                Console.Write("Leave Day/s: ");
+                emp.Leave = Convert.ToInt32(Console.ReadLine());
 
-                emp.NetPay = (decimal)payroll.ComputePayroll(emp).NetPay;
+                // Calculation
+                PayrollResult result = payroll.ComputePayroll(emp, sal);
+                sal.NetPay = (decimal)result.NetPay;
+                sal.OverTimePay = (decimal)result.Overtime;
 
-                empRepo.Add(emp);
+                empRepo.Add(emp, sal);
 
                 Console.WriteLine("Employee Added.");
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.Message);
-            }
+            catch (Exception ex) { Console.WriteLine(ex.Message); }
         }
 
         static void EditEmployee(EmployeeService empRepo, PayrollComputation payroll)
         {
             Console.Write("Enter Employee ID to edit: ");
             string editId = Console.ReadLine();
+            // Get the objects
             Employee? editEmp = empRepo.GetById(editId);
 
-            if (editEmp != null)
+            if (editEmp != null && editEmp.SalaryInfo != null)
             {
+                
                 Console.Write("New Name (leave blank to keep current): ");
                 string name = Console.ReadLine();
                 if (!string.IsNullOrWhiteSpace(name)) editEmp.EmpName = name;
@@ -187,29 +192,31 @@ namespace Payroll_Sedoro
 
                 Console.Write("New Hourly Rate (leave blank to keep current): ");
                 string rateStr = Console.ReadLine();
-                if (decimal.TryParse(rateStr, out decimal rate)) editEmp.HourlyRate = (int)rate;
+                if (decimal.TryParse(rateStr, out decimal rate)) editEmp.SalaryInfo.HourlyRate = rate;
 
                 Console.Write("New Hours Worked (leave blank to keep current): ");
                 string hoursStr = Console.ReadLine();
-                if (int.TryParse(hoursStr, out int hours)) editEmp.HoursWorked = hours;
+                if (decimal.TryParse(hoursStr, out decimal hours)) editEmp.SalaryInfo.HoursWorked = hours;
 
                 Console.Write("New Overtime Hours (leave blank to keep current): ");
                 string otStr = Console.ReadLine();
-                if (int.TryParse(otStr, out int ot)) editEmp.OverTime = ot;
+                if (decimal.TryParse(otStr, out decimal ot)) editEmp.SalaryInfo.OverTimeHours = ot;
 
-                Console.Write("New Leave Days (leave blank to keep current): ");
+                Console.Write("New Leave Day/s (leave blank to keep current): ");
                 string leaveStr = Console.ReadLine();
-                if (double.TryParse(leaveStr, out double leave)) editEmp.LeaveDays = (int)leave;
+                if (int.TryParse(leaveStr, out int leave)) editEmp.Leave = leave;
 
-                PayrollResult result = payroll.ComputePayroll(editEmp);
-                editEmp.NetPay = (decimal)result.NetPay;
+                // Re-calculate
+                PayrollResult result = payroll.ComputePayroll(editEmp, editEmp.SalaryInfo);
+                editEmp.SalaryInfo.NetPay = (decimal)result.NetPay;
 
-                empRepo.Update(editEmp);
-                Console.WriteLine("Employee updated with NetPay: " + editEmp.NetPay);
+                // Pass both objects to the service
+                empRepo.Update(editEmp, editEmp.SalaryInfo);
+                Console.WriteLine("Employee updated successfully.");
             }
             else
             {
-                Console.WriteLine("Employee not found.");
+                Console.WriteLine("Employee record not found.");
             }
         }
 
@@ -249,7 +256,7 @@ namespace Payroll_Sedoro
                 Console.WriteLine("Not found.");
         }
 
-        static void ShowPayroll(Employee emp, PayrollResult result, PayrollComputation payroll)
+        static void ShowPayroll(Employee emp, Salary sal, PayrollResult result, PayrollComputation payroll)
         {
             Console.WriteLine("\n------------------------------------");
             Console.WriteLine("    Employee Management System");
@@ -261,11 +268,11 @@ namespace Payroll_Sedoro
             Console.WriteLine($"Employee Name: {emp.EmpName}");
             Console.WriteLine($"Employee Title: {emp.EmpTitle}");
 
-            Console.WriteLine($"\nHourly Rate: {emp.HourlyRate}");
-            Console.WriteLine($"Hours Worked: {emp.HoursWorked}");
+            Console.WriteLine($"\nHourly Rate: {sal.HourlyRate}");
+            Console.WriteLine($"Hours Worked: {sal.HoursWorked}");
             Console.WriteLine($"Gross Basic Pay: {result.Gross}");
-            Console.WriteLine($"Overtime ({emp.OverTime} hr/s): {result.Overtime}");
-            Console.WriteLine($"Leave Deduction ({emp.LeaveDays} day/s): {result.LeaveDeduction}");
+            Console.WriteLine($"Overtime ({sal.OverTimeHours} hr/s): {sal.OverTimePay}");
+            Console.WriteLine($"Leave: {emp.Leave} day/s");
             Console.WriteLine($"Total Gross Pay: {result.TotalGross}");
 
             Console.WriteLine("\nTAXES");
@@ -283,7 +290,7 @@ namespace Payroll_Sedoro
             Console.WriteLine($"ID: {emp.EmpId}");
             Console.WriteLine($"Name: {emp.EmpName}");
             Console.WriteLine($"Title: {emp.EmpTitle}");
-            Console.WriteLine($"NetPay: {emp.NetPay}");
+            Console.WriteLine($"NetPay: {emp.SalaryInfo.NetPay}");
         }
     }
 }

@@ -6,163 +6,183 @@ namespace EmployeeDataService
 {
     public class EmployeeDBData : IEmployeeDataService
     {
-        // Connection string
-        private string connectionString = "Data Source=PIPS\\SQLEXPRESS;Initial Catalog=Payroll_Employee;Integrated Security=True;TrustServerCertificate=True;";
+        private string connectionString = "Data Source=PIPS\\SQLEXPRESS;Initial Catalog=PayrollDatabase;Integrated Security=True;TrustServerCertificate=True;";
 
-        private SqlConnection sqlConnection;
 
-        public EmployeeDBData()
+        public Employee GetById(string empId)
         {
-            sqlConnection = new SqlConnection(connectionString);
-            AddSeeds();
-        }
+            string query = @"
+        SELECT e.EmpId, e.EmpName, e.EmpTitle, e.Leave, 
+               s.HoursWorked, s.HourlyRate, s.OverTimeHours, s.OverTimePay, s.NetPay 
+        FROM Employee e
+        LEFT JOIN Salary s ON e.EmpId = s.EmpId
+        WHERE e.EmpId = @EmpId";
 
+            using SqlConnection conn = new SqlConnection(connectionString);
+            using SqlCommand cmd = new SqlCommand(query, conn);
+            cmd.Parameters.AddWithValue("@EmpId", empId);
 
-        private void AddSeeds()                                    //dummy seeds
-        {
-            var existing = GetEmployees();
-            if (existing.Count == 0)
-            {
-                Employee emp = new Employee
-                {
-                    EmpId = "kirby",
-                    EmpName = "Kirby T. Sedoro",
-                    EmpTitle = "Operation Manager",
-                    HourlyRate = 300,
-                    HoursWorked = 80,
-                    OverTime = 3,
-                    LeaveDays = 1,
-                    NetPay = 0
-                };
-
-                Add(emp);
-            }
-        }
-
-        public void Add(Employee emp)
-        {
-            string insertStatement = @"
-                INSERT INTO Employee
-                (empId, empName, empTitle, hourlyRate, hoursWorked, overTime, leaveDays, netPay)
-                VALUES
-                (@EmpId, @EmpName, @EmpTitle, @HourlyRate, @HoursWorked, @OverTime, @LeaveDays, @NetPay)";
-
-            using SqlCommand insertCommand = new SqlCommand(insertStatement, sqlConnection);
-
-            insertCommand.Parameters.AddWithValue("@EmpId", emp.EmpId);
-            insertCommand.Parameters.AddWithValue("@EmpName", (object?)emp.EmpName ?? DBNull.Value);
-            insertCommand.Parameters.AddWithValue("@EmpTitle", (object?)emp.EmpTitle ?? DBNull.Value);
-            insertCommand.Parameters.AddWithValue("@HourlyRate", emp.HourlyRate);
-            insertCommand.Parameters.AddWithValue("@HoursWorked", emp.HoursWorked);
-            insertCommand.Parameters.AddWithValue("@OverTime", (object?)emp.OverTime ?? DBNull.Value);
-            insertCommand.Parameters.AddWithValue("@LeaveDays", (object?)emp.LeaveDays ?? DBNull.Value);
-            insertCommand.Parameters.AddWithValue("@NetPay", (object?)emp.NetPay ?? DBNull.Value);
-
-            sqlConnection.Open();
-            insertCommand.ExecuteNonQuery();
-            sqlConnection.Close();
-        }
-
-        public List<Employee> GetEmployees()
-        {
-            string selectStatement = "SELECT * FROM Employee";
-            using SqlCommand selectCommand = new SqlCommand(selectStatement, sqlConnection);
-
-            sqlConnection.Open();
-            using SqlDataReader reader = selectCommand.ExecuteReader();
-
-            var employees = new List<Employee>();
-
-            while (reader.Read())
-            {
-                Employee emp = new Employee
-                {
-                    EmpId = reader["empId"].ToString(),
-                    EmpName = reader["empName"]?.ToString(),
-                    EmpTitle = reader["empTitle"]?.ToString(),
-                    HourlyRate = Convert.ToInt32(reader["hourlyRate"]),
-                    HoursWorked = Convert.ToInt32(reader["hoursWorked"]),
-                    OverTime = reader["overTime"] == DBNull.Value ? 0 : Convert.ToInt32(reader["overTime"]),
-                    LeaveDays = reader["leaveDays"] == DBNull.Value ? 0 : Convert.ToInt32(reader["leaveDays"]),
-                    NetPay = reader["netPay"] == DBNull.Value ? 0 : Convert.ToDecimal(reader["netPay"])
-                };
-
-                employees.Add(emp);
-            }
-
-            sqlConnection.Close();
-            return employees;
-        }
-
-        public Employee? GetById(string empId)
-        {
-            string selectStatement = "SELECT * FROM Employee WHERE empId = @EmpId";
-            using SqlCommand selectCommand = new SqlCommand(selectStatement, sqlConnection);
-            selectCommand.Parameters.AddWithValue("@EmpId", empId);
-
-            sqlConnection.Open();
-            using SqlDataReader reader = selectCommand.ExecuteReader();
-
-            Employee? emp = null;
+            conn.Open();
+            using SqlDataReader reader = cmd.ExecuteReader();
 
             if (reader.Read())
             {
-                emp = new Employee
+                var emp = new Employee
                 {
-                    EmpId = reader["empId"].ToString(),
-                    EmpName = reader["empName"]?.ToString(),
-                    EmpTitle = reader["empTitle"]?.ToString(),
-                    HourlyRate = Convert.ToInt32(reader["hourlyRate"]),
-                    HoursWorked = Convert.ToInt32(reader["hoursWorked"]),
-                    OverTime = reader["overTime"] == DBNull.Value ? 0 : Convert.ToInt32(reader["overTime"]),
-                    LeaveDays = reader["leaveDays"] == DBNull.Value ? 0 : Convert.ToInt32(reader["leaveDays"]),
-                    NetPay = reader["netPay"] == DBNull.Value ? 0 : Convert.ToDecimal(reader["netPay"])
+                    EmpId = reader["EmpId"].ToString(),
+                    EmpName = reader["EmpName"].ToString(),
+                    EmpTitle = reader["EmpTitle"].ToString(),
+                    Leave = Convert.ToInt32(reader["Leave"])
                 };
-            }
 
-            sqlConnection.Close();
-            return emp;
+                if (reader["HoursWorked"] != DBNull.Value)
+                {
+                    emp.SalaryInfo = new Salary
+                    {
+                        EmpId = emp.EmpId,
+                        HoursWorked = (decimal)reader["HoursWorked"],
+                        HourlyRate = (decimal)reader["HourlyRate"],
+                        OverTimeHours = (decimal)reader["OverTimeHours"],
+                        OverTimePay = (decimal)reader["OverTimePay"],
+                        NetPay = (decimal)reader["NetPay"]
+                    };
+                }
+
+                return emp;
+            }
+            return null;
         }
 
-        public void Update(Employee emp)
+        public void Update(Employee emp, Salary salary)
         {
-            string updateStatement = @"
-                UPDATE Employee SET
-                    empName = @EmpName,
-                    empTitle = @EmpTitle,
-                    hourlyRate = @HourlyRate,
-                    hoursWorked = @HoursWorked,
-                    overTime = @OverTime,
-                    leaveDays = @LeaveDays,
-                    netPay = @NetPay
-                WHERE empId = @EmpId";
+            using SqlConnection conn = new SqlConnection(connectionString);
+            conn.Open();
+            using SqlTransaction transaction = conn.BeginTransaction();
 
-            using SqlCommand updateCommand = new SqlCommand(updateStatement, sqlConnection);
+            try
+            {
+                string updateEmp = "UPDATE Employee SET EmpName=@Name, EmpTitle=@Title, Leave=@Leave WHERE EmpId=@Id";
+                using SqlCommand cmd1 = new SqlCommand(updateEmp, conn, transaction);
+                cmd1.Parameters.AddWithValue("@Name", emp.EmpName);
+                cmd1.Parameters.AddWithValue("@Title", emp.EmpTitle);
+                cmd1.Parameters.AddWithValue("@Leave", emp.Leave);
+                cmd1.Parameters.AddWithValue("@Id", emp.EmpId);
+                cmd1.ExecuteNonQuery();
 
-            updateCommand.Parameters.AddWithValue("@EmpId", emp.EmpId);
-            updateCommand.Parameters.AddWithValue("@EmpName", (object?)emp.EmpName ?? DBNull.Value);
-            updateCommand.Parameters.AddWithValue("@EmpTitle", (object?)emp.EmpTitle ?? DBNull.Value);
-            updateCommand.Parameters.AddWithValue("@HourlyRate", emp.HourlyRate);
-            updateCommand.Parameters.AddWithValue("@HoursWorked", emp.HoursWorked);
-            updateCommand.Parameters.AddWithValue("@OverTime", (object?)emp.OverTime ?? DBNull.Value);
-            updateCommand.Parameters.AddWithValue("@LeaveDays", (object?)emp.LeaveDays ?? DBNull.Value);
-            updateCommand.Parameters.AddWithValue("@NetPay", (object?)emp.NetPay ?? DBNull.Value);
+                string updateSalary = "UPDATE Salary SET HoursWorked=@HW, HourlyRate=@Rate, OverTimeHours=@OT, NetPay=@NP, OverTimePay=@OTP WHERE EmpId=@Id";
+                using SqlCommand cmd2 = new SqlCommand(updateSalary, conn, transaction);
+                cmd2.Parameters.AddWithValue("@HW", salary.HoursWorked);
+                cmd2.Parameters.AddWithValue("@Rate", salary.HourlyRate);
+                cmd2.Parameters.AddWithValue("@OT", salary.OverTimeHours);
+                cmd2.Parameters.AddWithValue("@NP", salary.NetPay);
+                cmd2.Parameters.AddWithValue("@OTP", salary.OverTimePay);
+                cmd2.Parameters.AddWithValue("@Id", emp.EmpId); 
+                cmd2.ExecuteNonQuery();
 
-            sqlConnection.Open();
-            updateCommand.ExecuteNonQuery();
-            sqlConnection.Close();
+                transaction.Commit();
+            }
+            catch { transaction.Rollback(); throw; }
+        }
+
+        public void Add(Employee emp, Salary salary)
+        {
+            using SqlConnection conn = new SqlConnection(connectionString);
+            conn.Open();
+            using SqlTransaction transaction = conn.BeginTransaction();
+
+            try
+            {
+                string sqlEmp = "INSERT INTO Employee (EmpId, EmpName, EmpTitle, Leave) VALUES (@Id, @Name, @Title, @Leave)";
+                using SqlCommand cmd1 = new SqlCommand(sqlEmp, conn, transaction);
+                cmd1.Parameters.AddWithValue("@Id", emp.EmpId);
+                cmd1.Parameters.AddWithValue("@Name", emp.EmpName);
+                cmd1.Parameters.AddWithValue("@Title", emp.EmpTitle);
+                cmd1.Parameters.AddWithValue("@Leave", emp.Leave);
+                cmd1.ExecuteNonQuery();
+
+                string sqlSal = "INSERT INTO Salary (EmpId, HoursWorked, HourlyRate, OverTimeHours, NetPay, OverTimePay) VALUES (@Id, @HW, @Rate, @OT, @NP, @OTP)";
+                using SqlCommand cmd2 = new SqlCommand(sqlSal, conn, transaction);
+                cmd2.Parameters.AddWithValue("@Id", salary.EmpId);
+                cmd2.Parameters.AddWithValue("@HW", salary.HoursWorked);
+                cmd2.Parameters.AddWithValue("@Rate", salary.HourlyRate);
+                cmd2.Parameters.AddWithValue("@OT", salary.OverTimeHours);
+                cmd2.Parameters.AddWithValue("@OTP", salary.OverTimePay);
+                cmd2.Parameters.AddWithValue("@NP", salary.NetPay);
+                cmd2.ExecuteNonQuery();
+
+                transaction.Commit();
+            }
+            catch (Exception)
+            {
+                transaction.Rollback();
+                throw;
+            }
         }
 
         public void Delete(string empId)
         {
-            string deleteStatement = "DELETE FROM Employee WHERE empId = @EmpId";
+            using SqlConnection conn = new SqlConnection(connectionString);
+            conn.Open();
+            using SqlTransaction transaction = conn.BeginTransaction();
 
-            using SqlCommand deleteCommand = new SqlCommand(deleteStatement, sqlConnection);
-            deleteCommand.Parameters.AddWithValue("@EmpId", empId);
+            try
+            {
+                
+                string delSal = "DELETE FROM Salary WHERE empId = @Id";
+                using SqlCommand cmd1 = new SqlCommand(delSal, conn, transaction);
+                cmd1.Parameters.AddWithValue("@Id", empId);
+                cmd1.ExecuteNonQuery();
 
-            sqlConnection.Open();
-            deleteCommand.ExecuteNonQuery();
-            sqlConnection.Close();
+                string delEmp = "DELETE FROM Employee WHERE empId = @Id";
+                using SqlCommand cmd2 = new SqlCommand(delEmp, conn, transaction);
+                cmd2.Parameters.AddWithValue("@Id", empId);
+                cmd2.ExecuteNonQuery();
+
+                transaction.Commit();
+            }
+            catch { transaction.Rollback(); throw; }
+        }
+
+        public List<Employee> GetEmployees()
+        {
+            List<Employee> list = new List<Employee>();
+
+            string query = @"
+        SELECT e.EmpId, e.EmpName, e.EmpTitle, 
+               s.HoursWorked, s.HourlyRate, s.OverTimeHours, s.OverTimePay, s.NetPay
+        FROM Employee e
+        LEFT JOIN Salary s ON e.EmpId = s.EmpId";
+
+            using var conn = new SqlConnection(connectionString);
+            using var cmd = new SqlCommand(query, conn);
+            conn.Open();
+            using var reader = cmd.ExecuteReader();
+
+            while (reader.Read())
+            {
+                var emp = new Employee
+                {
+                    EmpId = reader.GetString(reader.GetOrdinal("EmpId")),
+                    EmpName = reader.GetString(reader.GetOrdinal("EmpName")),
+                    EmpTitle = reader.GetString(reader.GetOrdinal("EmpTitle"))
+                };
+
+                int netPayOrd = reader.GetOrdinal("NetPay");
+                if (!reader.IsDBNull(netPayOrd))
+                {
+                    emp.SalaryInfo = new Salary
+                    {
+                        EmpId = emp.EmpId,
+                        HoursWorked = reader.GetDecimal(reader.GetOrdinal("HoursWorked")),
+                        HourlyRate = reader.GetDecimal(reader.GetOrdinal("HourlyRate")),
+                        OverTimeHours = reader.GetDecimal(reader.GetOrdinal("OverTimeHours")),
+                        OverTimePay = reader.GetDecimal(reader.GetOrdinal("OverTimePay")),
+                        NetPay = reader.GetDecimal(netPayOrd)
+                    };
+                }
+                list.Add(emp);
+            }
+            return list;
         }
     }
 }

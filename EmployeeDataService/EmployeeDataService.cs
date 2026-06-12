@@ -7,24 +7,18 @@ namespace EmployeeDataService
     {
         private readonly IEmployeeDataService _dataService;
 
-        public EmployeeService()
-        {
-            _dataService = new EmployeeJsonData(); // Edit for changing default database (Json or DB)
-        }
-
         public EmployeeService(IEmployeeDataService dataService)
         {
             _dataService = dataService;
         }
-
-        public void Add(Employee emp)
+        public void Add(Employee emp, Salary salary)
         {
             ValidateEmployee(emp);
 
-            if (GetById(emp.EmpId) != null)
+            if (_dataService.GetById(emp.EmpId) != null)
                 throw new Exception("Employee ID already exists.");
 
-            _dataService.Add(emp);
+            _dataService.Add(emp, salary);
         }
 
         public List<Employee> GetEmployees()
@@ -37,11 +31,10 @@ namespace EmployeeDataService
             return _dataService.GetById(id);
         }
 
-        public void Update(Employee emp)
+        public void Update(Employee emp, Salary salary)
         {
             ValidateEmployee(emp);
-
-            _dataService.Update(emp);
+            _dataService.Update(emp, salary);
         }
 
         public void Delete(string id)
@@ -57,8 +50,6 @@ namespace EmployeeDataService
             if (string.IsNullOrWhiteSpace(emp.EmpName))
                 throw new Exception("Employee Name required.");
 
-            if (emp.HourlyRate <= 0)
-                throw new Exception("Invalid Hourly Rate.");
         }
     }
 }
