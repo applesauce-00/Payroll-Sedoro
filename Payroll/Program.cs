@@ -1,4 +1,6 @@
-﻿using EmployeeDataService;
+﻿using MailService;
+using EmployeeDataService;
+using Microsoft.Extensions.Configuration;
 using PayrollService;
 using System;
 
@@ -8,12 +10,18 @@ namespace Payroll_Sedoro
     {
         static void Main(string[] args)
         {
+
+            IConfiguration configuration = new ConfigurationBuilder()
+                .SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
+                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+                .Build();
+
             EmployeeService empRepo = new EmployeeService(new EmployeeDBData());
             PayrollComputation payroll = new PayrollComputation();
 
             UpdateAllEmployeeNetPays(empRepo, payroll);
 
-            ShowMainMenu(empRepo, payroll);
+            ShowMainMenu(empRepo, payroll, configuration);
         }
 
         static void UpdateAllEmployeeNetPays(EmployeeService empRepo, PayrollComputation payroll)
@@ -27,7 +35,7 @@ namespace Payroll_Sedoro
             }
         }
 
-        static void ShowMainMenu(EmployeeService empRepo, PayrollComputation payroll)
+        static void ShowMainMenu(EmployeeService empRepo, PayrollComputation payroll, IConfiguration configuration)
         {
             Console.WriteLine("Select your role:");
             Console.WriteLine("1. Admin");
@@ -37,7 +45,7 @@ namespace Payroll_Sedoro
             string role = Console.ReadLine()?.Trim();
 
             if (role == "1")
-                AdminMenu(empRepo, payroll);
+                AdminMenu(empRepo, payroll,configuration);
 
             else if (role == "2")
                 EmployeeLogin(empRepo, payroll);
@@ -46,7 +54,7 @@ namespace Payroll_Sedoro
                 Console.WriteLine("Invalid choice.");
         }
 
-        static void AdminMenu(EmployeeService empRepo, PayrollComputation payroll)
+        static void AdminMenu(EmployeeService empRepo, PayrollComputation payroll, IConfiguration configuration)
         {
             const string adminUser = "admin";
             const string adminPass = "admin123";
@@ -81,7 +89,7 @@ namespace Payroll_Sedoro
                 switch (choice)
                 {
                     case "1":
-                        AddEmployee(empRepo, payroll);
+                        AddEmployee(empRepo, payroll, configuration);
                         break;
 
                     case "2":
@@ -130,7 +138,7 @@ namespace Payroll_Sedoro
             ShowPayroll(emp, emp.SalaryInfo, result, payroll);
         }
 
-        static void AddEmployee(EmployeeService empRepo, PayrollComputation payroll)
+        static void AddEmployee(EmployeeService empRepo, PayrollComputation payroll, IConfiguration configuration)
         {
             try
             {
@@ -140,7 +148,7 @@ namespace Payroll_Sedoro
                 Console.Write("ID: ");
                 string id = Console.ReadLine();
                 emp.EmpId = id;
-                sal.EmpId = id; // Foreign Key
+                sal.EmpId = id;
 
                 Console.Write("Name: ");
                 emp.EmpName = Console.ReadLine();
@@ -160,7 +168,6 @@ namespace Payroll_Sedoro
                 Console.Write("Leave Day/s: ");
                 emp.Leave = Convert.ToInt32(Console.ReadLine());
 
-                // Calculation
                 PayrollResult result = payroll.ComputePayroll(emp, sal);
                 sal.NetPay = (decimal)result.NetPay;
                 sal.OverTimePay = (decimal)result.Overtime;
@@ -168,6 +175,14 @@ namespace Payroll_Sedoro
                 empRepo.Add(emp, sal);
 
                 Console.WriteLine("Employee Added.");
+
+                var emailService = new EmailService(configuration);
+                emailService.SendEmail(
+                    "notifications@payroll-sedoro.sia",   
+                    "New Employee Added",
+                    $"{emp.EmpName}'s payroll has been added successfully"
+                );
+                Console.WriteLine("Notification email sent.");
             }
             catch (Exception ex) { Console.WriteLine(ex.Message); }
         }
